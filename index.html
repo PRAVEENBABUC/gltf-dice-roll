@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GLTF Dice Roll</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <input type="number" id="dice-number" min="1" max="6" value="1">
+    <button onclick="rollDice()">Roll Dice</button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+    <script>
+        // Setup scene, camera, and renderer
+        let scene = new THREE.Scene();
+        let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        let renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // GLTFLoader to load the dice model
+        let loader = new THREE.GLTFLoader();
+        let dice;
+
+        loader.load('./assets/scene.gltf', function (gltf) {
+            dice = gltf.scene;
+            scene.add(dice);
+
+            // Initial position of the dice
+            dice.position.set(0, 0, 0);
+            dice.rotation.set(0, 0, 0);
+        });
+
+        // Add lighting
+        let light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(5, 5, 5).normalize();
+        scene.add(light);
+
+        camera.position.z = 5;
+
+        // Render loop
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Function to handle dice roll
+        function rollDice() {
+            let number = document.getElementById('dice-number').value;
+            if (dice) {
+                // Predefined rotation values for each dice face
+                let rotations = {
+                    1: { x: Math.PI / 2, y: 0, z: 0 },
+                    2: { x: Math.PI, y: 0, z: 0 },
+                    3: { x: 0, y: Math.PI / 2, z: 0 },
+                    4: { x: 0, y: -Math.PI / 2, z: 0 },
+                    5: { x: 0, y: Math.PI, z: 0 },
+                    6: { x: 0, y: 0, z: Math.PI }
+                };
+
+                let targetRotation = rotations[number];
+
+                // Animate dice rotation
+                dice.rotation.x = targetRotation.x;
+                dice.rotation.y = targetRotation.y;
+                dice.rotation.z = targetRotation.z;
+            }
+        }
+    </script>
+</body>
+</html>
