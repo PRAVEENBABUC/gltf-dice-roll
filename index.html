@@ -31,24 +31,35 @@
 			renderer.setSize(window.innerWidth, window.innerHeight);
 		});
         // GLTFLoader to load the dice model
-        let loader = new THREE.GLTFLoader();
+		let loader = new GLTFLoader();
         let dice;
 
-        loader.load('./assets/scene.gltf', function (gltf) {
-            dice = gltf.scene;
-            scene.add(dice);
-
-            // Initial position of the dice
-            dice.position.set(0, 0, 0);
-            dice.rotation.set(0, 0, 0);
-        });
+        loader.load(
+			'./assets/scene.gltf',
+			function (gltf) {
+				dice = gltf.scene;
+				scene.add(dice);
+				dice.position.set(0, 0, -10); // Move it in front of the camera
+				dice.rotation.set(0, 0, 0);
+				dice.scale.set(0.1, 0.1, 0.1); // Adjust these values as needed
+			},
+			function (xhr) {
+				console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+			},
+			function (error) {
+				console.error('An error happened', error);
+			}
+		);
 
         // Add lighting
-        let light = new THREE.DirectionalLight(0xffffff, 1);
-        light.position.set(5, 5, 5).normalize();
-        scene.add(light);
+        let ambientLight = new THREE.AmbientLight(0x404040); // Soft white light
+		scene.add(ambientLight);
+		let directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+		directionalLight.position.set(1, 1, 1).normalize();
+		scene.add(directionalLight);
 
-        camera.position.set(0, 5, 25);  // Increase z-axis to ensure it's visible
+        camera.position.set(0, 5, 25);
+		camera.lookAt(scene.position);
 
 
 
