@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Dice Roller</title>
+  <title>1 Dice Roller</title>
   <meta name="description" content="Model Viewer (VR / AR) • A-Frame">
   <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no">
 
@@ -10,37 +10,41 @@
   <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://unpkg.com/aframe-html-shader@1.0.0/dist/aframe-html-shader.min.js"></script>
-
-  <!-- Additional scripts for your project -->
-  <script src="info-message.js"></script>
   <script src="https://unpkg.com/aframe-extras@3.3.0/dist/aframe-extras.min.js"></script>
-  <script src="hide-on-enter-ar.js"></script>
-  <script src="ar-shadows.js"></script>
-  <script src="ar-hit-test.js"></script>
-  <script src="model-viewer.js"></script>
-  <script src="background-gradient.js"></script>
+  <script src="https://unpkg.com/aframe-ar-hit-test-component@1.0.0/dist/aframe-ar-hit-test-component.min.js"></script>
 
   <!-- Dice rolling logic -->
   <script>
     AFRAME.registerComponent('roll-dice', {
       init: function () {
         const el = this.el;
-        
-        el.addEventListener('click', function () {
-          // Generate random rotation for dice to land on a random side
-          const randomRotation = {
-            x: Math.floor(Math.random() * 4) * 90, // 0, 90, 180, 270 degrees
-            y: Math.floor(Math.random() * 4) * 90, // 0, 90, 180, 270 degrees
-            z: Math.floor(Math.random() * 4) * 90  // 0, 90, 180, 270 degrees
-          };
 
-          // Animate the dice roll
-          el.setAttribute('animation', {
-            property: 'rotation',
-            to: `${randomRotation.x} ${randomRotation.y} ${randomRotation.z}`,
-            easing: 'easeOutBounce',
-            dur: 1000
-          });
+        // Use raycaster to detect clicks in AR mode
+        el.addEventListener('raycaster-intersected', (evt) => {
+          this.raycasterEl = evt.detail.el;
+        });
+        el.addEventListener('raycaster-intersected-cleared', () => {
+          this.raycasterEl = null;
+        });
+
+        // Trigger dice roll on click
+        el.addEventListener('click', () => {
+          if (this.raycasterEl) {
+            // Generate random rotation for dice to land on a random side
+            const randomRotation = {
+              x: Math.floor(Math.random() * 4) * 90, // 0, 90, 180, 270 degrees
+              y: Math.floor(Math.random() * 4) * 90, // 0, 90, 180, 270 degrees
+              z: Math.floor(Math.random() * 4) * 90  // 0, 90, 180, 270 degrees
+            };
+
+            // Animate the dice roll
+            el.setAttribute('animation', {
+              property: 'rotation',
+              to: `${randomRotation.x} ${randomRotation.y} ${randomRotation.z}`,
+              easing: 'easeOutBounce',
+              dur: 1000
+            });
+          }
         });
       }
     });
@@ -94,9 +98,10 @@
   </script>
 
   <!-- A-Frame scene -->
-  <a-scene renderer="colorManagement: true;"
-           info-message="htmlSrc: #messageText"
-           model-viewer="gltfModel: #diceroll; title: Dice Roll">
+  <a-scene renderer="colorManagement: true;" 
+           ar-hit-test 
+           raycaster="objects: .clickable"
+           cursor="rayOrigin: mouse">
     
     <!-- Assets for the model -->
     <a-assets>
@@ -108,9 +113,11 @@
     <!-- Dice model with roll-dice interaction -->
     <a-entity id="dice" 
               gltf-model="#diceroll"
+              class="clickable"
               roll-dice
               position="0 1 -3" 
-              scale="1 1 1">
+              scale="0.1 0.1 0.1"  <!-- Adjusted the scale to make it smaller in AR -->
+              shadow="cast: true;">
     </a-entity>
     
     <!-- Plane to display the chart -->
