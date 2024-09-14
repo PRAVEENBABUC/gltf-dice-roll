@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>6Model Viewer AR - VR</title>
+  <title>Dice Roller</title>
   <meta name="description" content="Model Viewer (VR / AR) • A-Frame">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  
+  <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no">
+
   <!-- Include A-Frame and necessary libraries -->
   <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -19,6 +19,32 @@
   <script src="ar-hit-test.js"></script>
   <script src="model-viewer.js"></script>
   <script src="background-gradient.js"></script>
+
+  <!-- Dice rolling logic -->
+  <script>
+    AFRAME.registerComponent('roll-dice', {
+      init: function () {
+        const el = this.el;
+        
+        el.addEventListener('click', function () {
+          // Generate random rotation for dice to land on a random side
+          const randomRotation = {
+            x: Math.floor(Math.random() * 4) * 90, // 0, 90, 180, 270 degrees
+            y: Math.floor(Math.random() * 4) * 90, // 0, 90, 180, 270 degrees
+            z: Math.floor(Math.random() * 4) * 90  // 0, 90, 180, 270 degrees
+          };
+
+          // Animate the dice roll
+          el.setAttribute('animation', {
+            property: 'rotation',
+            to: `${randomRotation.x} ${randomRotation.y} ${randomRotation.z}`,
+            easing: 'easeOutBounce',
+            dur: 1000
+          });
+        });
+      }
+    });
+  </script>
 </head>
 <body>
   <!-- Hidden canvas for the chart -->
@@ -70,14 +96,22 @@
   <!-- A-Frame scene -->
   <a-scene renderer="colorManagement: true;"
            info-message="htmlSrc: #messageText"
-           model-viewer="gltfModel: #mining; title: Mining Analytics">
+           model-viewer="gltfModel: #diceroll; title: Dice Roll">
     
     <!-- Assets for the model -->
     <a-assets>
-      <a-asset-item id="mining"
+      <a-asset-item id="diceroll"
         src="https://raw.githubusercontent.com/PRAVEENBABUC/gltf-dice-roll/main/assets/scene.gltf"
         response-type="arraybuffer" crossorigin="anonymous"></a-asset-item>
     </a-assets>
+    
+    <!-- Dice model with roll-dice interaction -->
+    <a-entity id="dice" 
+              gltf-model="#diceroll"
+              roll-dice
+              position="0 1 -3" 
+              scale="1 1 1">
+    </a-entity>
     
     <!-- Plane to display the chart -->
     <a-entity id="chart" 
@@ -89,5 +123,3 @@
   </a-scene>
 </body>
 </html>
-
-
