@@ -1,130 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>5 IOT Dice Roll</title>
-    <style>
-        body { margin: 0; }
-        canvas { display: block; }
-        #controls {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            z-index: 100;
-            background: rgba(255, 255, 255, 0.7);
-            padding: 10px;
-            border-radius: 5px;
-        }
-        #loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 24px;
-            color: white;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Dice Roll with Model Viewer</title>
+  <meta name="description" content="Model Viewer Dice Roll">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  
+  <!-- A-Frame Library -->
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <script src="model-viewer.js"></script>
+  
+  <style>
+    body { margin: 0; }
+    #controls { position: absolute; top: 10px; left: 10px; z-index: 100; }
+  </style>
 </head>
 <body>
-    <div id="controls">
-        <input type="number" id="dice-number" min="1" max="6" value="1">
-        <button id="roll-button">Roll Dice</button>
-    </div>
-    <div id="loading">Loading model...</div>
-    <script type="module">
-        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.module.js';
-        import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.132.2/examples/jsm/loaders/GLTFLoader.js';
+  <!-- Control UI -->
+  <div id="controls">
+    <input type="number" id="dice-number" min="1" max="6" value="1">
+    <button id="roll-button">Roll Dice</button>
+  </div>
 
-        let scene, camera, renderer, dice;
+  <!-- A-Frame Scene -->
+  <a-scene renderer="colorManagement: true;">
+    <!-- Model Viewer Component -->
+    <a-entity model-viewer="gltfModel: #diceModel; title: Dice Roll AR Experience"></a-entity>
+    
+    <!-- Assets -->
+    <a-assets>
+      <a-asset-item id="diceModel" src="https://raw.githubusercontent.com/PRAVEENBABUC/gltf-dice-roll/main/assets/scene.gltf"></a-asset-item>
+    </a-assets>
+  </a-scene>
 
-        function init() {
-            // Setup scene, camera, and renderer
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            renderer = new THREE.WebGLRenderer();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            document.body.appendChild(renderer.domElement);
-
-            // Add this part here for resizing
-            window.addEventListener('resize', () => {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-            });
-
-            // GLTFLoader to load the dice model
-            let loader = new GLTFLoader();
-            loader.load(
-                'https://github.com/PRAVEENBABUC/gltf-dice-roll/blob/3ec2b35a9260d314b90077b2ba8764790741c182/assets/scene.gltf',
-                function (gltf) {
-                    dice = gltf.scene;
-                    scene.add(dice);
-                    dice.position.set(0, 0, -10); // Move it in front of the camera
-                    dice.rotation.set(0, 0, 0);
-                    dice.scale.set(0.1, 0.1, 0.1); // Adjust these values as needed
-                    document.getElementById('loading').style.display = 'none'; // Hide loading message
-                    console.log('Model loaded successfully');
-                },
-                function (xhr) {
-                    console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-                },
-                function (error) {
-                    console.error('An error happened', error);
-                    document.getElementById('loading').textContent = 'Error loading model';
-                }
-            );
-
-            // Add lighting
-            let ambientLight = new THREE.AmbientLight(0x404040); // Soft white light
-            scene.add(ambientLight);
-            let directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-            directionalLight.position.set(1, 1, 1).normalize();
-            scene.add(directionalLight);
-
-            camera.position.set(0, 5, 25);
-            camera.lookAt(scene.position);
-
-            // Set background color
-            scene.background = new THREE.Color(0x808080); // Light gray background
-
-            animate();
-        }
-
-        // Render loop
-        function animate() {
-            requestAnimationFrame(animate);
-            renderer.render(scene, camera);
-        }
-
-        // Function to handle dice roll
-        function rollDice() {
-            let number = document.getElementById('dice-number').value;
-            if (dice) {
-                // Predefined rotation values for each dice face
-                let rotations = {
-                    1: { x: Math.PI / 2, y: 0, z: 0 },
-                    2: { x: Math.PI, y: 0, z: 0 },
-                    3: { x: 0, y: Math.PI / 2, z: 0 },
-                    4: { x: 0, y: -Math.PI / 2, z: 0 },
-                    5: { x: 0, y: Math.PI, z: 0 },
-                    6: { x: 0, y: 0, z: Math.PI }
-                };
-                let targetRotation = rotations[number];
-                // Animate dice rotation
-                dice.rotation.x = targetRotation.x;
-                dice.rotation.y = targetRotation.y;
-                dice.rotation.z = targetRotation.z;
-            } else {
-                console.log('Dice model not loaded yet');
-            }
-        }
-
-        // Initialize the scene
-        init();
-
-        // Add event listener to roll button
-        document.getElementById('roll-button').addEventListener('click', rollDice);
-    </script>
+  <!-- Script to handle dice roll -->
+  <script>
+    document.getElementById('roll-button').addEventListener('click', function () {
+      const number = document.getElementById('dice-number').value;
+      const rotations = {
+        1: { x: Math.PI / 2, y: 0, z: 0 },
+        2: { x: Math.PI, y: 0, z: 0 },
+        3: { x: 0, y: Math.PI / 2, z: 0 },
+        4: { x: 0, y: -Math.PI / 2, z: 0 },
+        5: { x: 0, y: Math.PI, z: 0 },
+        6: { x: 0, y: 0, z: Math.PI }
+      };
+      
+      const diceModel = document.querySelector('[model-viewer]');
+      if (diceModel) {
+        const targetRotation = rotations[number];
+        diceModel.object3D.rotation.set(targetRotation.x, targetRotation.y, targetRotation.z);
+      }
+    });
+  </script>
 </body>
 </html>
