@@ -3,72 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2 IOT Dice Roll</title>
+    <title>4 IOT Dice Roll</title>
     <style>
         body { margin: 0; }
         canvas { display: block; }
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            color: white;
+        }
     </style>
 </head>
 <body>
-    <input type="number" id="dice-number" min="1" max="6" value="1">
-    <button onclick="rollDice()">Roll Dice</button>
+    <div id="controls">
+        <input type="number" id="dice-number" min="1" max="6" value="1">
+        <button id="roll-button">Roll Dice</button>
+    </div>
+    <div id="loading">Loading model...</div>
+    <script type="module">
+        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.module.js';
+        import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.132.2/examples/jsm/loaders/GLTFLoader.js';
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+        let scene, camera, renderer, dice;
 
-    <script>
-        // Setup scene, camera, and renderer
-		let scene = new THREE.Scene();
-		let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-		let renderer = new THREE.WebGLRenderer();
-		renderer.setSize(window.innerWidth, window.innerHeight);
-		document.body.appendChild(renderer.domElement);
+        function init() {
+            // Setup scene, camera, and renderer
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
 
-		// Add this part here for resizing
-		window.addEventListener('resize', () => {
-			camera.aspect = window.innerWidth / window.innerHeight;
-			camera.updateProjectionMatrix();
-			renderer.setSize(window.innerWidth, window.innerHeight);
-		});
-        // GLTFLoader to load the dice model
-		let loader = new GLTFLoader();
-        let dice;
+            // Add this part here for resizing
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
 
-        loader.load(
-			'./assets/scene.gltf',
-			function (gltf) {
-				dice = gltf.scene;
-				scene.add(dice);
-				dice.position.set(0, 0, -10); // Move it in front of the camera
-				dice.rotation.set(0, 0, 0);
-				dice.scale.set(0.1, 0.1, 0.1); // Adjust these values as needed
-			},
-			function (xhr) {
-				console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-			},
-			function (error) {
-				console.error('An error happened', error);
-			}
-		);
+            // GLTFLoader to load the dice model
+            let loader = new GLTFLoader();
+            loader.load(
+                './assets/scene.gltf',
+                function (gltf) {
+                    dice = gltf.scene;
+                    scene.add(dice);
+                    dice.position.set(0, 0, -10); // Move it in front of the camera
+                    dice.rotation.set(0, 0, 0);
+                    dice.scale.set(0.1, 0.1, 0.1); // Adjust these values as needed
+                    document.getElementById('loading').style.display = 'none'; // Hide loading message
+                    console.log('Model loaded successfully');
+                },
+                function (xhr) {
+                    console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+                },
+                function (error) {
+                    console.error('An error happened', error);
+                    document.getElementById('loading').textContent = 'Error loading model';
+                }
+            );
 
-        // Add lighting
-        let ambientLight = new THREE.AmbientLight(0x404040); // Soft white light
-		scene.add(ambientLight);
-		let directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-		directionalLight.position.set(1, 1, 1).normalize();
-		scene.add(directionalLight);
+            // Add lighting
+            let ambientLight = new THREE.AmbientLight(0x404040); // Soft white light
+            scene.add(ambientLight);
+            let directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(1, 1, 1).normalize();
+            scene.add(directionalLight);
 
-        camera.position.set(0, 5, 25);
-		camera.lookAt(scene.position);
+            camera.position.set(0, 5, 25);
+            camera.lookAt(scene.position);
 
+            // Set background color
+            scene.background = new THREE.Color(0x808080); // Light gray background
 
+            animate();
+        }
 
         // Render loop
         function animate() {
             requestAnimationFrame(animate);
             renderer.render(scene, camera);
         }
-        animate();
 
         // Function to handle dice roll
         function rollDice() {
@@ -83,15 +110,21 @@
                     5: { x: 0, y: Math.PI, z: 0 },
                     6: { x: 0, y: 0, z: Math.PI }
                 };
-
                 let targetRotation = rotations[number];
-
                 // Animate dice rotation
                 dice.rotation.x = targetRotation.x;
                 dice.rotation.y = targetRotation.y;
                 dice.rotation.z = targetRotation.z;
+            } else {
+                console.log('Dice model not loaded yet');
             }
         }
+
+        // Initialize the scene
+        init();
+
+        // Add event listener to roll button
+        document.getElementById('roll-button').addEventListener('click', rollDice);
     </script>
 </body>
 </html>
