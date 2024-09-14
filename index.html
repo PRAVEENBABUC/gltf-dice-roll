@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>4 IOT Dice Roll</title>
+    <title>5 IOT Dice Roll</title>
     <style>
         body { margin: 0; }
         canvas { display: block; }
@@ -56,7 +56,7 @@
             // GLTFLoader to load the dice model
             let loader = new GLTFLoader();
             loader.load(
-                './assets/scene.gltf',
+                'https://github.com/PRAVEENBABUC/gltf-dice-roll/blob/3ec2b35a9260d314b90077b2ba8764790741c182/assets/scene.gltf',
                 function (gltf) {
                     dice = gltf.scene;
                     scene.add(dice);
